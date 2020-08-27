@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import argparse
+from pathlib import Path
+from datetime import datetime
 
 import numpy as np
 import scipy
@@ -56,6 +58,9 @@ CARDS = [
 
 
 def mk_header():
+    """
+    Generate CSV header string
+    """
     hdr = "# "
     for c in CARDS:
         hdr += f"{c},"
@@ -63,14 +68,39 @@ def mk_header():
     for r in REGIONS:
         for s in ["mean", "median", "stddev"]:
             hdr += f"{r}_{s},"
-
+    hdr += "CREATE TIME"
     hdr += "filename"
     return hdr
 
 
+def process_file(filename):
+    """
+    Process FITS file to get desired header info and image statistics
+    """
+    outstr = ""
+    with fits.open(filename) as hdul:
+        im = hdul[0].data
+        hdr = hdul[0].header
+
+        for c in CARDS:
+            outstr += f"{hdr[c]},"
+
+        for k, r in REGIONS.items():
+            cutout = im[r['y'], r['x']]
+            im_mean, im_med, im_std = sigma_clipped_stats(cutout, sigma=3, maxiters=5)
+            outstr += f"{im_mean:.3f},{im_med:.3f},{im_std:.3f},"
+        ts = datetime.fromtimestamp(Path(filename).stat().st_ctime)
+        outstr += f"{ts.isoformat()},"
+        outstr += f"{filename}"
+
+    return outstr
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Grab header and image statistics from MMTO skycam image")
-    parser.add_argument('-f', '--filename', help="FITS image from MMTO skycam")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-f', '--filename', help="FITS image from MMTO skycam")
+    group.add_argument('-d', '--directory', help="Process all FITS files in a directory")
     parser.add_argument('--header', action="store_true", help="Add header string to output")
     args = parser.parse_args()
 
@@ -78,18 +108,9 @@ if __name__ == '__main__':
         print(mk_header())
 
     if args.filename is not None:
-        outstr = ""
-        with fits.open(args.filename) as hdul:
-            im = hdul[0].data
-            hdr = hdul[0].header
+        print(process_file(args.filename))
 
-            for c in CARDS:
-                outstr += f"{hdr[c]},"
-
-            for k, r in REGIONS.items():
-                cutout = im[r['y'], r['x']]
-                im_mean, im_med, im_std = sigma_clipped_stats(cutout, sigma=3, maxiters=5)
-                outstr += f"{im_mean:.3f},{im_med:.3f},{im_std:.3f},"
-            outstr += f"{args.filename}"
-
-        print(outstr)
+    if args.directory is not None:
+        files = sorted(Path(args.directory).glob("*fits*"))
+        for f in files:
+            print(process_file(f))
