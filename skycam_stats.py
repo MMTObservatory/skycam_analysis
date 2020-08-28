@@ -102,6 +102,7 @@ if __name__ == '__main__':
     group.add_argument('-f', '--filename', help="FITS image from MMTO skycam")
     group.add_argument('-d', '--directory', help="Process all FITS files in a directory")
     parser.add_argument('--header', action="store_true", help="Add header string to output")
+    parser.add_argument('-z', '--uncompress', action="store_true", help="Operate on .fits.gz files")
     args = parser.parse_args()
 
     if args.header:
@@ -111,6 +112,9 @@ if __name__ == '__main__':
         print(process_file(args.filename))
 
     if args.directory is not None:
-        files = sorted(Path(args.directory).glob("*.fits"))
+        if args.uncompress:
+            files = sorted(Path(args.directory).glob("*.fits.gz"))
+        else:
+            files = sorted(Path(args.directory).glob("*.fits"))
         for f in files:
             print(process_file(f))
