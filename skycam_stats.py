@@ -111,6 +111,6 @@ if __name__ == '__main__':
         print(process_file(args.filename))
 
     if args.directory is not None:
-        files = sorted(Path(args.directory).glob("*fits*"))
+        files = sorted(Path(args.directory).glob("*.fits"))
         for f in files:
             print(process_file(f))
