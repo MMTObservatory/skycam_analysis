@@ -68,7 +68,7 @@ def mk_header():
     for r in REGIONS:
         for s in ["mean", "median", "stddev"]:
             hdr += f"{r}_{s},"
-    hdr += "CREATE TIME"
+    hdr += "CREATE TIME,"
     hdr += "filename"
     return hdr
 
