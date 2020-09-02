@@ -19,6 +19,10 @@ iers.conf.auto_download = False
 iers.conf.auto_max_age = None
 
 
+# need different WCS solutions for different eras. 2011-2012 are the same. unsure of 2014. 2015 and 2016 are different.
+# it looks like 2017-2020 is pretty stable, but slight shifts are noticable. looks like 2019 and 2020 are close enough to
+# share a solution.
+
 REGIONS = {
     # This is a region low in the north above the brightest part of Tucson's sky glow
     'Tucson': {
