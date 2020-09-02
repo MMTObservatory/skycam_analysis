@@ -93,8 +93,8 @@ def process_file(filename):
     """
     outstr = ""
     with fits.open(filename) as hdul:
-        im = hdul[0].data
-        hdr = hdul[0].header
+        im = hdul[-1].data
+        hdr = hdul[-1].header
 
         for c in CARDS:
             outstr += f"{hdr[c]},"
@@ -107,13 +107,16 @@ def process_file(filename):
         subim = im[REGIONS['Polaris']['y'], REGIONS['Polaris']['x']]
         mean, median, std = sigma_clipped_stats(subim, sigma=3, maxiters=10)
         finder = IRAFStarFinder(fwhm=2.0, threshold=5*std)
-        sources = finder(subim - median)
-        if sources is not None:
-            sources.sort(['mag'])
-            polaris = sources[0]
-            for k in ['mag', 'flux', 'peak', 'xcentroid', 'ycentroid']:
-                outstr += f"{polaris[k]:.3f},"
-        else:
+        try:
+            sources = finder(subim - median)
+            if sources is not None:
+                sources.sort(['mag'])
+                polaris = sources[0]
+                for k in ['mag', 'flux', 'peak', 'xcentroid', 'ycentroid']:
+                    outstr += f"{polaris[k]:.3f},"
+            else:
+                outstr += ",,,,,"
+        except:
             outstr += ",,,,,"
         outstr += f"{filename}"
 
