@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import warnings
 import argparse
 from pathlib import Path
 from datetime import datetime
@@ -10,6 +11,9 @@ import scipy
 from astropy.io import fits
 from astropy.stats import sigma_clipped_stats
 from photutils import IRAFStarFinder
+
+
+warnings.filterwarnings('ignore')
 
 
 REGIONS = {
