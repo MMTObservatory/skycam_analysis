@@ -106,10 +106,8 @@ def process_file(filename):
         finder = IRAFStarFinder(fwhm=2.0, threshold=5*std)
         sources = finder(subim - median)
         if sources is not None:
-            if len(sources) == 1:
-                polaris = sources[0]
-            else:
-                polaris = sources.sort(['mag'])[0]
+            sources.sort(['mag'])
+            polaris = sources[0]
             for k in ['mag', 'flux', 'peak', 'xcentroid', 'ycentroid']:
                 outstr += f"{polaris[k]:.3f},"
         else:
