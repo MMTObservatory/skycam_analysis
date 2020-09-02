@@ -9,6 +9,7 @@ import scipy
 
 from astropy.io import fits
 from astropy.stats import sigma_clipped_stats
+from photutils import IRAFStarFinder
 
 
 REGIONS = {
@@ -16,6 +17,12 @@ REGIONS = {
     'Tucson': {
         'x': slice(320, 335),
         'y': slice(423, 433)
+    },
+
+    # Large region centered on Polaris
+    'Polaris': {
+        'x': slice(293-15, 293+15),
+        'y': slice(406-15, 406+15)
     },
 
     # This region is low in the SSW above the brightest part of Nogales's sky glow
@@ -61,14 +68,14 @@ def mk_header():
     """
     Generate CSV header string
     """
-    hdr = "# "
+    hdr = ""
     for c in CARDS:
         hdr += f"{c},"
 
     for r in REGIONS:
         for s in ["mean", "median", "stddev"]:
             hdr += f"{r}_{s},"
-    hdr += "CREATE TIME,"
+    hdr += "Polaris_mag,Polaris_flux,Polaris_peak,Polaris_x,Polaris_y,"
     hdr += "filename"
     return hdr
 
@@ -89,8 +96,20 @@ def process_file(filename):
             cutout = im[r['y'], r['x']]
             im_mean, im_med, im_std = sigma_clipped_stats(cutout, sigma=3, maxiters=5)
             outstr += f"{im_mean:.3f},{im_med:.3f},{im_std:.3f},"
-        ts = datetime.fromtimestamp(Path(filename).stat().st_ctime)
-        outstr += f"{ts.isoformat()},"
+
+        subim = im[REGIONS['Polaris']['y'], REGIONS['Polaris']['x']]
+        mean, median, std = sigma_clipped_stats(subim, sigma=3, maxiters=10)
+        finder = IRAFStarFinder(fwhm=2.0, threshold=5*std)
+        sources = finder(subim - median)
+        if sources is not None:
+            if len(sources) == 1:
+                polaris = sources[0]
+            else:
+                polaris = sources.sort(['mag'])[0]
+            for k in ['mag', 'flux', 'peak', 'xcentroid', 'ycentroid']:
+                outstr += f"{polaris[k]:.3f},"
+        else:
+            outstr += ",,,,,"
         outstr += f"{filename}"
 
     return outstr
