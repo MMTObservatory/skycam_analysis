@@ -10,10 +10,12 @@ import scipy
 
 from astropy.io import fits
 from astropy.stats import sigma_clipped_stats
+from astropy.utils import iers
 from photutils import IRAFStarFinder
 
 
 warnings.filterwarnings('ignore')
+iers.conf.auto_download = False
 
 
 REGIONS = {
