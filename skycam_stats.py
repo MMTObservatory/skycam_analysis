@@ -16,6 +16,7 @@ from photutils import IRAFStarFinder
 
 warnings.filterwarnings('ignore')
 iers.conf.auto_download = False
+iers.conf.auto_max_age = None
 
 
 REGIONS = {
