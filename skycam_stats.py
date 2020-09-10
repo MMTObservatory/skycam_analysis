@@ -97,8 +97,11 @@ def process_file(filename):
     """
     outstr = ""
     with fits.open(filename) as hdul:
-        im = hdul[-1].data
-        hdr = hdul[-1].header
+        hdr = hdul[0].header
+        if hdr['NAXIS'] == 3:
+            im = np.flipud(hdul[0].data[:, :, 0])
+        else:
+            im = hdul[0].data
 
         for c in CARDS:
             outstr += f"{hdr[c]},"
