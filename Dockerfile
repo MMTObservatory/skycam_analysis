@@ -4,7 +4,7 @@ LABEL maintainer="te.pickering@gmail.com"
 
 RUN apt update && apt -y install git
 RUN python -m pip install --upgrade pip
-RUN pip install astropy scipy numpy photutils pandas scikit-image
+RUN pip install astropy scipy numpy photutils pandas scikit-image==0.16.2
 RUN pip install git+https://github.com/tepickering/skycam_utils#egg=skycam_utils
 
 COPY iers.py /usr/local/bin/iers.py
