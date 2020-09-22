@@ -10,10 +10,14 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[docker skip]')"
     steps:
     - uses: actions/checkout@master
+    -
+      name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USER }}
+        password: ${{ secrets.DOCKER_TOKEN }}
     - name: Publish to Registry
       uses: docker/build-push-action@v2
       with:
-        repository: mmtobservatory/skycam_stats
-        username: ${{ secrets.DOCKER_USER }}
-        password: ${{ secrets.DOCKER_TOKEN }}
-        tags: latest
+        push: true
+        tags: mmtobservatory/skycam_stats:latest
