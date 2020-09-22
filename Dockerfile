@@ -2,9 +2,11 @@ FROM python:slim
 
 LABEL maintainer="te.pickering@gmail.com"
 
-RUN pip install astropy scipy numpy photutils
+RUN apt update && apt -y install git
+RUN python -m pip install --upgrade pip
+RUN pip install astropy scipy numpy photutils pandas
+RUN pip install git+https://github.com/tepickering/skycam_utils#egg=skycam_utils
 
-COPY skycam_stats.py /usr/local/bin/skycam_stats
 COPY iers.py /usr/local/bin/iers.py
 
 VOLUME ["/data"]
@@ -13,4 +15,4 @@ WORKDIR /data
 
 RUN /usr/local/bin/iers.py
 
-ENTRYPOINT ["/usr/local/bin/skycam_stats"]
+ENTRYPOINT ["process_stellacam_dir"]
